@@ -1,37 +1,47 @@
-import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
-import { useFonts } from 'expo-font';
 import { Stack } from 'expo-router';
-import * as SplashScreen from 'expo-splash-screen';
-import { useEffect } from 'react';
-import 'react-native-reanimated';
+import { useFonts } from 'expo-font';
+import { LogBox, StatusBar, useColorScheme } from 'react-native';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { customFonts } from '@/constants';
+import Toast from 'react-native-toast-message';
+import { ActiveToast, ErrorToast, NeutralToast, SuccessToast } from '@/components/toasts';
 
-import { useColorScheme } from '@/hooks/useColorScheme';
+const RootLayout = () => {
+    const [fontsLoaded] = useFonts(customFonts);
+    const isDark = useColorScheme() === 'dark';
 
-// Prevent the splash screen from auto-hiding before asset loading is complete.
-SplashScreen.preventAutoHideAsync();
-
-export default function RootLayout() {
-  const colorScheme = useColorScheme();
-  const [loaded] = useFonts({
-    SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
-  });
-
-  useEffect(() => {
-    if (loaded) {
-      SplashScreen.hideAsync();
+    if (!fontsLoaded) {
+        return null;
     }
-  }, [loaded]);
 
-  if (!loaded) {
-    return null;
-  }
-
-  return (
-    <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <Stack>
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="+not-found" />
-      </Stack>
-    </ThemeProvider>
-  );
+    return (
+        <SafeAreaProvider>
+            <StatusBar
+                animated={true}
+                barStyle={isDark ? 'light-content' : 'light-content'}
+                showHideTransition={'fade'}
+                translucent
+                backgroundColor='transparent'
+            />
+            <Stack
+                screenOptions={{
+                    headerShown: false
+                }}
+            >
+                <Stack.Screen name="(auth)" />
+            </Stack>
+            <Toast
+                config={{
+                    caError: ErrorToast,
+                    caSuccess: SuccessToast,
+                    caActive: ActiveToast,
+                    caNeutral: NeutralToast,
+                }}
+            />
+        </SafeAreaProvider>
+    )
 }
+
+export default RootLayout;
+
+LogBox.ignoreLogs(['WARN']);

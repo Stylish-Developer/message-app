@@ -1,0 +1,1 @@
+export { customFonts } from './custom-fonts'
